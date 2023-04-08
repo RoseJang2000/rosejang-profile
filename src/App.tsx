@@ -17,7 +17,7 @@ const App = () => {
   return (
     <Container>
       <GlobalStyle />
-      {isTerminalOpen && <Terminal />}
+      {isTerminalOpen && <Terminal setIsTerminalOpen={setIsTerminalOpen} />}
       <Background />
       <section className="content">Hello! RoseJang2000!</section>
       <IconWrapper>
