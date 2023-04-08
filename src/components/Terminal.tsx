@@ -4,6 +4,7 @@ import { ResizableBox } from "react-resizable";
 import { IoFilterOutline, IoClose } from "react-icons/io5";
 import { FaRegWindowMinimize } from "react-icons/fa";
 import { useEffect, useState } from "react";
+import TerminalScreen from "./TerminalScreen";
 
 const Terminal = ({
   setIsTerminalOpen,
@@ -14,8 +15,12 @@ const Terminal = ({
     const windowWidth = window.innerWidth;
     if (windowWidth <= 576) {
       return { width: 300, height: 400 };
+    } else if (windowWidth <= 768) {
+      return { width: 500, height: 400 };
+    } else if (windowWidth <= 992) {
+      return { width: 700, height: 500 };
     }
-    return { width: 500, height: 400 };
+    return { width: 800, height: 500 };
   };
 
   const [boxSize, setBoxSize] = useState(handleBoxSize());
@@ -36,7 +41,7 @@ const Terminal = ({
   }, []);
 
   return (
-    <TerminalWrapper width={boxSize.width}>
+    <TerminalWrapper width={boxSize.width} height={boxSize.height}>
       <Draggable bounds="body" handle=".bar">
         <ResizableBox
           width={boxSize.width}
@@ -61,13 +66,14 @@ const Terminal = ({
               <FaRegWindowMinimize className="icon" size={13} />
             </div>
           </div>
+          <TerminalScreen setIsTerminalOpen={setIsTerminalOpen} />
         </ResizableBox>
       </Draggable>
     </TerminalWrapper>
   );
 };
 
-const TerminalWrapper = styled.div<{ width: number }>`
+const TerminalWrapper = styled.div<{ width: number; height: number }>`
   width: 100vw;
   height: 100vh;
   position: absolute;
@@ -77,14 +83,13 @@ const TerminalWrapper = styled.div<{ width: number }>`
     position: relative;
     width: 500px;
     height: 400px;
-    background-color: #111;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
     border: 1px solid #888;
     border-radius: 0.5rem;
     overflow: hidden;
     z-index: 10;
     left: calc(50% - ${(props) => props.width / 2}px);
-    top: calc(50% - 200px);
+    top: calc(50% - ${(props) => props.height / 2}px);
   }
   .bar {
     width: 100%;
