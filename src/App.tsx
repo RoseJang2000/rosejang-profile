@@ -5,6 +5,7 @@ import Background from "@components/Background";
 import { iconList } from "@assets/iconList";
 import Folder from "@components/Folder";
 import TerminalIcon from "@components/TerminalIcon";
+import Terminal from "@components/Terminal";
 
 const App = () => {
   const [isTerminalOpen, setIsTerminalOpen] = useState<boolean>(false);
@@ -16,6 +17,7 @@ const App = () => {
   return (
     <Container>
       <GlobalStyle />
+      {isTerminalOpen && <Terminal />}
       <Background />
       <section className="content">Hello! RoseJang2000!</section>
       <IconWrapper>
