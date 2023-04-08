@@ -3,22 +3,40 @@ import Draggable from "react-draggable";
 import { ResizableBox } from "react-resizable";
 import { IoFilterOutline, IoClose } from "react-icons/io5";
 import { FaRegWindowMinimize } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Terminal = ({
   setIsTerminalOpen,
 }: {
   setIsTerminalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const [boxSize, setBoxSize] = useState({ width: 500, height: 400 });
+  const handleBoxSize = () => {
+    const windowWidth = window.innerWidth;
+    if (windowWidth <= 576) {
+      return { width: 300, height: 400 };
+    }
+    return { width: 500, height: 400 };
+  };
+
+  const [boxSize, setBoxSize] = useState(handleBoxSize());
   const [isMouseOver, setIsMouseOver] = useState<boolean>(false);
 
   const handleCloseTerminal = () => {
     setIsTerminalOpen(false);
   };
 
+  const handleResizeWindow = () => {
+    setBoxSize(handleBoxSize());
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResizeWindow);
+    handleResizeWindow();
+    return () => window.removeEventListener("resize", handleResizeWindow);
+  }, []);
+
   return (
-    <TerminalWrapper>
+    <TerminalWrapper width={boxSize.width}>
       <Draggable bounds="body" handle=".bar">
         <ResizableBox
           width={boxSize.width}
@@ -49,10 +67,11 @@ const Terminal = ({
   );
 };
 
-const TerminalWrapper = styled.div`
+const TerminalWrapper = styled.div<{ width: number }>`
   width: 100vw;
   height: 100vh;
   position: absolute;
+  overflow: auto;
 
   .react-resizable {
     position: relative;
@@ -64,7 +83,7 @@ const TerminalWrapper = styled.div`
     border-radius: 0.5rem;
     overflow: hidden;
     z-index: 10;
-    left: calc(50% - 250px);
+    left: calc(50% - ${(props) => props.width / 2}px);
     top: calc(50% - 200px);
   }
   .bar {
