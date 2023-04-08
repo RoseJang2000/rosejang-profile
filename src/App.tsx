@@ -54,9 +54,14 @@ const Container = styled.main`
 const IconWrapper = styled.section`
   width: 50rem
   background-color: #fff;
-  display: flex;
+  display: grid;
   gap: 2rem;
   align-items: flex-end;
+  grid-template-columns: repeat(4, 1fr);
+
+  @media screen and (max-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 export default App;

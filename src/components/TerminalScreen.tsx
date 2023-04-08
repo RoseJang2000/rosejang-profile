@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { iconList } from "@assets/iconList";
 
@@ -32,10 +32,13 @@ const TerminalScreen = ({
     ...HELP.slice(1),
   ]);
   const [inputValue, setInputValue] = useState<string>("");
+  const screenRef = useRef<HTMLDivElement>(null);
 
+  /** 터미널 명령어 검사 함수 */
   const CheckCommandValue = (value: string): CommandItem | undefined => {
-    const head = value.split(" ")[0];
-    const tail = value.split(" ").slice(1).join(" ");
+    const filterdArr = value.split(" ").filter((item) => item !== "");
+    const head = filterdArr[0];
+    const tail = filterdArr.slice(1).join(" ");
     const tailLower = tail.toLowerCase();
     const folderNames = FOLDERS.map((item) => item.toLowerCase());
     const fileNames = FILES.map((item) => item.toLowerCase());
@@ -119,6 +122,12 @@ const TerminalScreen = ({
     return { type: "response", value: `command not found: ${head}` };
   };
 
+  const autoScroll = () => {
+    if (screenRef.current !== null) {
+      screenRef.current.scrollTop = screenRef.current.scrollHeight;
+    }
+  };
+
   const handleSubmitCommand = (event: React.SyntheticEvent) => {
     event.preventDefault();
 
@@ -135,8 +144,12 @@ const TerminalScreen = ({
     setInputValue(value);
   };
 
+  useEffect(() => {
+    autoScroll();
+  }, [commandList]);
+
   return (
-    <Screen>
+    <Screen ref={screenRef}>
       {commandList.map((item, index) => (
         <div key={index} className={`list-item ${item.type}`}>
           {item.type === "command" && <span className="command-icon">$</span>}
@@ -170,7 +183,7 @@ const TerminalScreen = ({
   );
 };
 
-const Screen = styled.section`
+const Screen = styled.div`
   width: 100%;
   height: calc(100% - 2rem);
   background-color: #111;
