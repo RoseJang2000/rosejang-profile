@@ -4,7 +4,7 @@ interface Icon {
   link: string;
 }
 
-export const iconList = [
+export const iconList: Icon[] = [
   {
     type: "folder",
     name: "Github",
