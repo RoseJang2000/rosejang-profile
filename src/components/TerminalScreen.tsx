@@ -35,8 +35,25 @@ const TerminalScreen = ({
   const screenRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const addResponse = (value: string) => {
+    const newResponse = {
+      type: "response",
+      value,
+    };
+    setCommandList((cur) => [...cur, newResponse]);
+  };
+
+  const addCommand = (command: string, value: string) => {
+    const newCommand = {
+      type: "command",
+      command,
+      value,
+    };
+    setCommandList((cur) => [...cur, newCommand]);
+  };
+
   /** 터미널 명령어 검사 함수 */
-  const CheckCommandValue = (value: string): CommandItem | undefined => {
+  const CheckCommandValue = (value: string) => {
     const filterdArr = value.split(" ").filter((item) => item !== "");
     const head = filterdArr[0];
     const tail = filterdArr.slice(1).join(" ");
@@ -44,10 +61,7 @@ const TerminalScreen = ({
     const folderNames = FOLDERS.map((item) => item.toLowerCase());
     const fileNames = FILES.map((item) => item.toLowerCase());
 
-    setCommandList((cur) => [
-      ...cur,
-      { type: "command", command: head, value: tail },
-    ]);
+    addCommand(head, tail);
 
     // * clear
     if (head === "clear") {
@@ -61,19 +75,16 @@ const TerminalScreen = ({
     // * whoami
     if (head === "whoami") {
       if (tail !== "") {
-        return { type: "response", value: "usage: whoami" };
+        return addResponse("usage: whoami");
       }
-      return { type: "response", value: "RoseJang/FrontEnd-Developer" };
+      return addResponse("RoseJang/FrontEnd-Developer");
     }
     // * ls
     if (head === "ls") {
       if (tail !== "" && tail !== "-al") {
-        return {
-          type: "response",
-          value: `ls: ${tail}: No such file or directory`,
-        };
+        return addResponse(`ls: ${tail}: No such file or directory`);
       }
-      return { type: "response", value: `${LISTS.join(" ")}` };
+      return addResponse(`${LISTS.join(" ")}`);
     }
     // * cd
     if (head === "cd") {
@@ -88,12 +99,9 @@ const TerminalScreen = ({
         return;
       }
       if (fileNames.includes(tailLower)) {
-        return { type: "response", value: `cd: not a directory: ${tail}` };
+        return addResponse(`cd: not a directory: ${tail}`);
       }
-      return {
-        type: "response",
-        value: `cd: no such file or directory: ${tail}`,
-      };
+      return addResponse(`cd: no such file or directory: ${tail}`);
     }
     // * cat
     if (head === "cat") {
@@ -109,18 +117,12 @@ const TerminalScreen = ({
         return;
       }
       if (folderNames.includes(tailLower)) {
-        return {
-          type: "response",
-          value: `cat: ${tail}: Is a directory`,
-        };
+        return addResponse(`cat: ${tail}: Is a directory`);
       }
-      return {
-        type: "response",
-        value: `cat: ${tail}: No such file or directory`,
-      };
+      return addResponse(`cat: ${tail}: No such file or directory`);
     }
     // * error
-    return { type: "response", value: `command not found: ${head}` };
+    return addResponse(`command not found: ${head}`);
   };
 
   const handleSubmitCommand = (event: React.SyntheticEvent) => {
@@ -129,13 +131,10 @@ const TerminalScreen = ({
     if (inputValue.replaceAll(" ", "") === "") {
       setCommandList((cur) => [...cur, { type: "command", value: "" }]);
       setInputValue("");
-      return;
+    } else {
+      CheckCommandValue(inputValue);
+      setInputValue("");
     }
-    const checkedValue = CheckCommandValue(inputValue);
-    if (checkedValue !== undefined) {
-      setCommandList((cur) => [...cur, checkedValue]);
-    }
-    setInputValue("");
   };
 
   const autoScroll = () => {
