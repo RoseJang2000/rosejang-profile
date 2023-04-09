@@ -5,6 +5,7 @@ import Background from "@components/Background";
 import { iconList } from "@assets/iconList";
 import Folder from "@components/Folder";
 import TerminalIcon from "@components/TerminalIcon";
+import Terminal from "@components/Terminal";
 
 const App = () => {
   const [isTerminalOpen, setIsTerminalOpen] = useState<boolean>(false);
@@ -16,6 +17,7 @@ const App = () => {
   return (
     <Container>
       <GlobalStyle />
+      {isTerminalOpen && <Terminal setIsTerminalOpen={setIsTerminalOpen} />}
       <Background />
       <section className="content">Hello! RoseJang2000!</section>
       <IconWrapper>
@@ -52,9 +54,14 @@ const Container = styled.main`
 const IconWrapper = styled.section`
   width: 50rem
   background-color: #fff;
-  display: flex;
+  display: grid;
   gap: 2rem;
   align-items: flex-end;
+  grid-template-columns: repeat(4, 1fr);
+
+  @media screen and (max-width: 576px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 export default App;
