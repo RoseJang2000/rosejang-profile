@@ -32,6 +32,8 @@ const TerminalScreen = ({
     ...HELP.slice(1),
   ]);
   const [inputValue, setInputValue] = useState<string>("");
+  const [prevCommands, setPrevCommands] = useState<string[]>([]);
+  const commandIdx = useRef(0);
   const screenRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -65,6 +67,7 @@ const TerminalScreen = ({
 
     // * clear
     if (head === "clear") {
+      setPrevCommands([]);
       setCommandList([]);
       return;
     }
@@ -132,6 +135,7 @@ const TerminalScreen = ({
       setCommandList((cur) => [...cur, { type: "command", value: "" }]);
       setInputValue("");
     } else {
+      setPrevCommands((cur) => [...cur, inputValue]);
       CheckCommandValue(inputValue);
       setInputValue("");
     }
@@ -154,8 +158,21 @@ const TerminalScreen = ({
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const { code } = event;
-    console.log(code);
+
+    if (code === "ArrowUp") {
+      if (commandIdx.current === 0) return;
+      commandIdx.current = commandIdx.current - 1;
+      setInputValue(prevCommands[commandIdx.current]);
+    } else if (code === "ArrowDown") {
+      if (commandIdx.current >= prevCommands.length - 1) return;
+      commandIdx.current = commandIdx.current + 1;
+      setInputValue(prevCommands[commandIdx.current]);
+    }
   };
+
+  useEffect(() => {
+    commandIdx.current = prevCommands.length;
+  }, [prevCommands]);
 
   useEffect(() => {
     autoScroll();
