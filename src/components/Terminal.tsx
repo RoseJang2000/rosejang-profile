@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import Draggable from "react-draggable";
-import { ResizableBox } from "react-resizable";
-import { IoFilterOutline, IoClose } from "react-icons/io5";
+import { Resizable } from "re-resizable";
+import { IoClose } from "react-icons/io5";
 import { FaRegWindowMinimize } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TerminalScreen from "./TerminalScreen";
 import { MdCloseFullscreen, MdOutlineOpenInFull } from "react-icons/md";
 
@@ -12,115 +12,102 @@ const Terminal = ({
 }: {
   setIsTerminalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const [boxTransition, setBoxTransition] = useState({ transition: "0.3s" });
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
-
-  const handleBoxSize = () => {
-    const windowWidth = window.innerWidth;
-    if (isFullScreen) {
-      return { width: windowWidth, height: window.innerHeight };
-    }
-
-    if (windowWidth <= 576) {
-      return { width: 300, height: 400 };
-    } else if (windowWidth <= 768) {
-      return { width: 500, height: 400 };
-    } else if (windowWidth <= 992) {
-      return { width: 700, height: 500 };
-    }
-    return { width: 800, height: 500 };
-  };
-
-  const [boxSize, setBoxSize] = useState(handleBoxSize());
   const [isMouseOver, setIsMouseOver] = useState<boolean>(false);
 
   const handleCloseTerminal = () => {
     setIsTerminalOpen(false);
   };
 
-  const handleResizeWindow = () => {
-    setBoxSize(handleBoxSize());
-  };
-
   const handleFullScreenTerminal = () => {
-    if (!isFullScreen) {
-      setBoxSize({ width: window.innerWidth, height: window.innerHeight });
-      setIsFullScreen(true);
-    } else {
-      setBoxSize(handleBoxSize());
-      setIsFullScreen(false);
-    }
+    setIsFullScreen((cur) => !cur);
   };
 
-  useEffect(() => {
-    window.addEventListener("resize", handleResizeWindow);
-    handleResizeWindow();
-    return () => window.removeEventListener("resize", handleResizeWindow);
-  }, [isFullScreen]);
+  const handleTransitionDisable = () => {
+    setBoxTransition({ transition: "none" });
+  };
+
+  const handleTransitionAble = () => {
+    setBoxTransition({ transition: "0.3s" });
+  };
+
+  const draggableSettings = {
+    bounds: ".bound",
+    handle: ".bar",
+    position: isFullScreen ? { x: 0, y: 0 } : undefined,
+    onStart: handleTransitionDisable,
+    onStop: handleTransitionAble,
+  };
+
+  const resizableSettings = {
+    defaultSize: { width: "75%", height: "70%" },
+    minHeight: 100,
+    minWidth: 100,
+    enable: {
+      right: true,
+      bottom: true,
+      bottomRight: true,
+    },
+    size: isFullScreen ? { width: "100%", height: "100%" } : undefined,
+    style: boxTransition,
+    onResizeStart: handleTransitionDisable,
+    onResizeEnd: handleTransitionAble,
+  };
 
   return (
-    <TerminalWrapper
-      className="bound"
-      width={boxSize.width}
-      height={boxSize.height}
-    >
-      <Draggable bounds=".bound" handle=".bar">
-        <ResizableBox
-          width={boxSize.width}
-          height={boxSize.height}
-          handle={
-            <ResizeHandle>
-              <IoFilterOutline size={25} />
-            </ResizeHandle>
-          }
-          minConstraints={[100, 100]}
-        >
-          <div className="bar"></div>
-          <div
-            className={`circles ${isMouseOver ? "mouse-on" : ""}`}
-            onMouseOver={() => setIsMouseOver(true)}
-            onMouseOut={() => setIsMouseOver(false)}
-          >
-            <div className="circle circle-1" onClick={handleCloseTerminal}>
-              <IoClose className="icon" size={16} />
+    <TerminalWrapper className="bound">
+      <Draggable {...draggableSettings} disabled={isFullScreen}>
+        <Resizable {...resizableSettings}>
+          <ContentBox>
+            <div className="bar"></div>
+            <div
+              className={`circles ${isMouseOver ? "mouse-on" : ""}`}
+              onMouseOver={() => setIsMouseOver(true)}
+              onMouseOut={() => setIsMouseOver(false)}
+            >
+              <div className="circle circle-1" onClick={handleCloseTerminal}>
+                <IoClose className="icon" size={16} />
+              </div>
+              <div className="circle circle-2" onClick={handleCloseTerminal}>
+                <FaRegWindowMinimize className="icon" size={13} />
+              </div>
+              <div
+                className="circle circle-3"
+                onClick={handleFullScreenTerminal}
+              >
+                {isFullScreen ? (
+                  <MdCloseFullscreen className="icon" size={13} />
+                ) : (
+                  <MdOutlineOpenInFull className="icon" size={13} />
+                )}
+              </div>
             </div>
-            <div className="circle circle-2" onClick={handleCloseTerminal}>
-              <FaRegWindowMinimize className="icon" size={13} />
-            </div>
-            <div className="circle circle-3" onClick={handleFullScreenTerminal}>
-              {isFullScreen ? (
-                <MdCloseFullscreen className="icon" size={13} />
-              ) : (
-                <MdOutlineOpenInFull className="icon" size={13} />
-              )}
-            </div>
-          </div>
-          <TerminalScreen setIsTerminalOpen={setIsTerminalOpen} />
-        </ResizableBox>
+            <TerminalScreen setIsTerminalOpen={setIsTerminalOpen} />
+          </ContentBox>
+        </Resizable>
       </Draggable>
     </TerminalWrapper>
   );
 };
 
-const TerminalWrapper = styled.div<{ width: number; height: number }>`
+const TerminalWrapper = styled.div`
   width: 100vw;
   height: 100vh;
   position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  .react-resizable {
-    position: relative;
-    width: 500px;
-    height: 400px;
-    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
-    border: 1px solid #888;
-    border-radius: 0.5rem;
-    overflow: hidden;
+  .react-draggable {
     z-index: 10;
-    /* left: calc(50% - ${(props) => props.width / 2}px);
-    top: calc(50% - ${(props) => props.height / 2}px); */
   }
+`;
+
+const ContentBox = styled.div`
+  width: 100%;
+  height: 100%;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
+  border: 1px solid #888;
+  border-radius: 0.5rem;
+  overflow: hidden;
+
   .bar {
     width: 100%;
     height: 2rem;
@@ -129,7 +116,11 @@ const TerminalWrapper = styled.div<{ width: number; height: number }>`
     background-color: #666;
     display: flex;
     align-items: center;
+    justify-content: center;
     cursor: default;
+  }
+  .bar-title {
+    color: #fff;
   }
   .circles {
     width: 4rem;
@@ -170,15 +161,6 @@ const TerminalWrapper = styled.div<{ width: number; height: number }>`
       display: block;
     }
   }
-`;
-
-const ResizeHandle = styled.div`
-  position: absolute;
-  bottom: -0.3rem;
-  right: -0.3rem;
-  cursor: nw-resize;
-  color: #888;
-  transform: rotate(-46deg);
 `;
 
 export default Terminal;

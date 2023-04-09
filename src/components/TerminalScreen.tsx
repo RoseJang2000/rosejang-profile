@@ -193,6 +193,8 @@ const Screen = styled.div`
   flex-direction: column;
   gap: 0.2rem;
   overflow: auto;
+  cursor: text;
+
   * {
     font-family: "Fira Code", monospace;
   }
