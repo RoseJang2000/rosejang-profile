@@ -52,7 +52,7 @@ const Terminal = ({
     size: isFullScreen ? { width: "100%", height: "100%" } : undefined,
     style: boxTransition,
     onResizeStart: handleTransitionDisable,
-    onResizeEnd: handleTransitionAble,
+    onResizeStop: handleTransitionAble,
   };
 
   return (
