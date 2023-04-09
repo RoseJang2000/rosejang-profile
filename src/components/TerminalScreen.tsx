@@ -33,6 +33,7 @@ const TerminalScreen = ({
   ]);
   const [inputValue, setInputValue] = useState<string>("");
   const screenRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   /** 터미널 명령어 검사 함수 */
   const CheckCommandValue = (value: string): CommandItem | undefined => {
@@ -122,16 +123,14 @@ const TerminalScreen = ({
     return { type: "response", value: `command not found: ${head}` };
   };
 
-  const autoScroll = () => {
-    if (screenRef.current !== null) {
-      screenRef.current.scrollTop = screenRef.current.scrollHeight;
-    }
-  };
-
   const handleSubmitCommand = (event: React.SyntheticEvent) => {
     event.preventDefault();
 
-    if (inputValue === "") return;
+    if (inputValue.replaceAll(" ", "") === "") {
+      setCommandList((cur) => [...cur, { type: "command", value: "" }]);
+      setInputValue("");
+      return;
+    }
     const checkedValue = CheckCommandValue(inputValue);
     if (checkedValue !== undefined) {
       setCommandList((cur) => [...cur, checkedValue]);
@@ -139,9 +138,24 @@ const TerminalScreen = ({
     setInputValue("");
   };
 
+  const autoScroll = () => {
+    if (screenRef.current !== null) {
+      screenRef.current.scrollTop = screenRef.current.scrollHeight;
+    }
+  };
+
+  const autoFocusInput = () => {
+    inputRef.current?.focus();
+  };
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setInputValue(value);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const { code } = event;
+    console.log(code);
   };
 
   useEffect(() => {
@@ -149,7 +163,7 @@ const TerminalScreen = ({
   }, [commandList]);
 
   return (
-    <Screen ref={screenRef}>
+    <Screen ref={screenRef} onClick={autoFocusInput}>
       {commandList.map((item, index) => (
         <div key={index} className={`list-item ${item.type}`}>
           {item.type === "command" && <span className="command-icon">$</span>}
@@ -176,6 +190,8 @@ const TerminalScreen = ({
           type="text"
           value={inputValue}
           onChange={handleInputChange}
+          onKeyDown={(event) => handleKeyDown(event)}
+          ref={inputRef}
           autoFocus
         />
       </CommandInput>
