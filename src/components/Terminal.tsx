@@ -5,14 +5,21 @@ import { IoFilterOutline, IoClose } from "react-icons/io5";
 import { FaRegWindowMinimize } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import TerminalScreen from "./TerminalScreen";
+import { MdCloseFullscreen, MdOutlineOpenInFull } from "react-icons/md";
 
 const Terminal = ({
   setIsTerminalOpen,
 }: {
   setIsTerminalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
+
   const handleBoxSize = () => {
     const windowWidth = window.innerWidth;
+    if (isFullScreen) {
+      return { width: windowWidth, height: window.innerHeight };
+    }
+
     if (windowWidth <= 576) {
       return { width: 300, height: 400 };
     } else if (windowWidth <= 768) {
@@ -34,15 +41,29 @@ const Terminal = ({
     setBoxSize(handleBoxSize());
   };
 
+  const handleFullScreenTerminal = () => {
+    if (!isFullScreen) {
+      setBoxSize({ width: window.innerWidth, height: window.innerHeight });
+      setIsFullScreen(true);
+    } else {
+      setBoxSize(handleBoxSize());
+      setIsFullScreen(false);
+    }
+  };
+
   useEffect(() => {
     window.addEventListener("resize", handleResizeWindow);
     handleResizeWindow();
     return () => window.removeEventListener("resize", handleResizeWindow);
-  }, []);
+  }, [isFullScreen]);
 
   return (
-    <TerminalWrapper width={boxSize.width} height={boxSize.height}>
-      <Draggable bounds="body" handle=".bar">
+    <TerminalWrapper
+      className="bound"
+      width={boxSize.width}
+      height={boxSize.height}
+    >
+      <Draggable bounds=".bound" handle=".bar">
         <ResizableBox
           width={boxSize.width}
           height={boxSize.height}
@@ -65,6 +86,13 @@ const Terminal = ({
             <div className="circle circle-2" onClick={handleCloseTerminal}>
               <FaRegWindowMinimize className="icon" size={13} />
             </div>
+            <div className="circle circle-3" onClick={handleFullScreenTerminal}>
+              {isFullScreen ? (
+                <MdCloseFullscreen className="icon" size={13} />
+              ) : (
+                <MdOutlineOpenInFull className="icon" size={13} />
+              )}
+            </div>
           </div>
           <TerminalScreen setIsTerminalOpen={setIsTerminalOpen} />
         </ResizableBox>
@@ -77,7 +105,9 @@ const TerminalWrapper = styled.div<{ width: number; height: number }>`
   width: 100vw;
   height: 100vh;
   position: absolute;
-  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   .react-resizable {
     position: relative;
@@ -88,8 +118,8 @@ const TerminalWrapper = styled.div<{ width: number; height: number }>`
     border-radius: 0.5rem;
     overflow: hidden;
     z-index: 10;
-    left: calc(50% - ${(props) => props.width / 2}px);
-    top: calc(50% - ${(props) => props.height / 2}px);
+    /* left: calc(50% - ${(props) => props.width / 2}px);
+    top: calc(50% - ${(props) => props.height / 2}px); */
   }
   .bar {
     width: 100%;
@@ -102,7 +132,7 @@ const TerminalWrapper = styled.div<{ width: number; height: number }>`
     cursor: default;
   }
   .circles {
-    width: 2.5rem;
+    width: 4rem;
     display: flex;
     justify-content: space-between;
     margin-left: 0.5rem;
@@ -128,8 +158,12 @@ const TerminalWrapper = styled.div<{ width: number; height: number }>`
       top: -0.3rem;
     }
   }
+  .circle-3 {
+    background-color: #29c840;
+  }
   .icon {
     display: none;
+    color: #333;
   }
   .mouse-on {
     .icon {
